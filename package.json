@@ -1,0 +1,16 @@
+{
+  "name": "visualstudio",
+  "version": "1.0.0",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "zabo-sdk-js": "^0.5.0"
+  },
+  "devDependencies": {},
+  "description": ""
+}
