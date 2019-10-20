@@ -37,6 +37,13 @@
 		.bgimg {background-image: url("public/images/bg2.jpg")}
 		.bgimg2 {background-image: url("public/images/bg3.jpg")}
 		.bgimg3 {background-image: url("public/images/bg1.png")}
+		canvas {
+			height:500px;
+			width:1000px;		 	 
+		}
+		th {
+		    white-space: pre-wrap;
+		}
 	</style>
 	<body>
 		<!-- Header / Home-->
@@ -47,7 +54,6 @@
 				<h2><button id= "connect"><span id="connect_display"></span></button></h2>
 				<div id="table_connect" class="hidden">
 					<table style="width:100%">
-					  <tr></tr>
 					  <tr>
 					    <th>Wallet Provider</th>
 					    <th>Currencies in Account</th>
@@ -72,34 +78,36 @@
 		<!-- Balance -->
 		<!-- <div class="w3-container w3-padding-64 w3-pale-black w3-grayscale-min" id="balance"> -->
 		<div class="w3-display-container bgimg3">
-			<div class="w3-display-middle w3-text-white w3-center">
+			<div id="table_balance" class="hidden">
+				<font size=4 style="font-family=Courier New">
+					<table rules="groups" id='balance_table' class="w3-display-topmiddle w3-margin-top w3-text-black w3-padding" style="background-color: #ffffff" border=2></table>
+				</font>
+			</div>
+			<div class="w3-display-middle w3-text-white w3-center" style="height:40%">
 			<!-- <div class="w3-content"> -->
-				<h2 class="w3-center w3-text-grey"><button id= "balance">Balance</button></h2>
-				<h2 class="w3-display-center w3-text-green">Put more stuff here heheheheh</h2>
-				<br>
-				<div id="table_balance" class="hidden">
-						<table style="width:100%">
-						  <tr></tr>
-						  <tr>
-						    <th>Crypto-Currency</th>
-						    <th>Current Amount</th>
-						    <th>Last Transaction</th>
-						  </tr>
-						  <tr>
-						    <td><span id="cryptoCurrency"></span></td>
-						    <td><span id="currentAmount"></span></td>
-						    <td><span id="lastTransaction"></span></td>
-						  </tr>
-						</table>
+				<div >
+					<h2 class="w3-center w3-text-grey w3-margin-bottom">
+						<button id= "balance">Balance</button>
+					</h2>
 				</div>
+				<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+				<canvas id="canvas"></canvas>
 			</div>
 		</div>
 		
 		<!-- Background photo -->
 		<div class="w3-display-container bgimg2">
 			<div class="w3-display-middle w3-text-white w3-center">
-				<h2 class="w3-center"><button id= "exchangeRates">Exchange Rate</button></h2><br>
-				<h2>Of course..</h2>
+				<div>	
+					<h2 class="w3-center w3-text-grey w3-margin-bottom">
+						<button id= "exchangeRates">Exchange Rate</button>
+					</h2>
+				</div>
+			</div>
+			<div class="w3-display-middle hidden" id="table_exchange" style="width:80%">
+				<font size=4 style="font-family=Courier New">
+					<table rules="groups" id='exchange_table' class="w3-display-left w3-margin-top w3-text-white w3-padding" border=2></table>
+				</font>
 			</div>
 		</div>
 
@@ -107,18 +115,31 @@
 		<div class="w3-container w3-padding-64 w3-silver w3-grayscale-min w3-center" id="transaction">
 			<div class="w3-content">
 				<h2 class="w3-text-grey"><b>
-					<input type="text" id="tic" name="message" rows="1" cols="4"></input>
-				</b><button id= "history">Get Transaction History</button></b></h2>
-				<div class="w3-row">
-					<div class="w3-half">
-						<h2>When</h2>
-						<p>???</p>
-						<p>Get Balance</p>
+					<div id="table_transact" class="hidden">
+						<table style="width:100%">
+						  <tr>
+						    <th>Currencies in Account</th>
+						  </tr>
+						  <tr>
+						    <td><span id="trans"></span></td>
+						  </tr>
+						</table>
 					</div>
-					<div class="w3-half">
-						<h2>Where</h2>
-						<p>Some place, an address</p>
-						<p>Some where, some address</p>
+					<input type="text" id="tic" name="message" rows="1" cols="4"></input>
+				</b><button id= "history">Get Transaction History (Last 25)</button></b></h2>
+				<div class="w3-row">
+					<div id="transaction_table" class="hidden">
+						<table id="table_transaction" style="width:100%; white-space:nowrap; border-collapse: collapse;" border=1>
+							<tr>
+							    <th>Transaction ID  (Dont share with ANYONE!)</th>
+							    <th>Type</th>
+							    <th>Amount</th>
+							    <th>Currency Type</th>
+							    <th>Transaction Status</th>
+							    <th>Initiated At</th>
+							    <th>Confirmed At</th>
+				            </tr>
+						</table>
 					</div>
 				</div>
 			</div>
@@ -159,6 +180,7 @@
 				Zabo.connect().onConnection(account => {
 					console.log('account connected: ',account)
 					unhide('table_connect')
+					unhide('table_transact')
 					document.getElementById('connect_display').innerHTML="Connected"
 					// var jsonStr = JSON.stringify(account)
 					document.getElementById('walletProvider').innerHTML = account.wallet_provider_display_name;
@@ -169,6 +191,9 @@
 						document.getElementById('curren').innerHTML += curr.currency + ", ";
 						cur_currencies.push(curr.currency)
 					}
+					console.log(cur_currencies)
+					document.getElementById('trans').innerHTML = cur_currencies;
+					
 					bindOtherMethods()
 				})
 				.onError(error => {
@@ -176,6 +201,33 @@
 				})
 			})
 		}
+
+		function generateCanvas(balances = []) {
+			console.log(balances);
+			var labels = balances.map(function(e) {
+			   return e.currency;
+			});
+			var data = balances.map(function(e) {
+			   return e.balance;
+			});
+
+			var ctx = document.getElementById("canvas").getContext('2d');
+			var config = {
+			   	animationEnabled: true,
+				type: 'bar',
+			 	data: {
+				    labels: labels,
+				    	datasets: [{
+				        	label: 'Graph Line',
+					        data: data,
+					        backgroundColor: 'rgba(34, 28, 201, 1)'
+					    }]
+			   	}
+			};
+
+			var chart = new Chart(ctx,config);
+		}
+
 		function unhide(divID) {
 			var item = document.getElementById(divID);
 			if (item) {
@@ -184,21 +236,235 @@
 			    }
 			}
 		}
+
+		// function addCell(tr, val) {
+		// 	var td = document.createElement('td');
+		// 	td.innerHTML = val;
+		// 	tr.appendChild(td)
+		// }
+
+		// function addRow(table, val1, val2, val3) {
+		// 	var tr = document.createElement('tr');
+			
+		// 	addCell(tr, val1);
+		// 	addCell(tr, val2);
+		// 	addCell(tr, val3);
+
+		// 	table.appendChild(tr)
+		// }
+
+		function generateBalance(balance) {
+			const myNode = document.getElementById('balance_table');
+			while(myNode.firstChild) {
+				myNode.removeChild(myNode.firstChild);
+			}
+			var balance_table=document.getElementById('balance_table');
+			var tb1=document.createElement('table');
+			for(var i=0;i<balance.length+1;i++) {
+				var tr = document.createElement('tr');
+				
+				if(i<1) {
+					var td4 = document.createElement('td');
+					var td5 = document.createElement('td');
+					var td6 = document.createElement('td');
+
+					var text4 = document.createTextNode('Crypto-Currency');
+					var text5 = document.createTextNode('Current Balance');
+					var text6 = document.createTextNode('Last Updated');
+
+					td4.appendChild(text4);
+					td5.appendChild(text5);
+					td6.appendChild(text6);
+					tr.appendChild(td4);
+					tr.appendChild(td5);
+					tr.appendChild(td6);
+
+					tb1.appendChild(tr);
+				}
+				// addRow(balance_table, balance[i].currency, balance[i].balance, balance[i].updated_at);
+				else {
+					var td1 = document.createElement('td');
+					var td2 = document.createElement('td');
+					var td3 = document.createElement('td');
+
+					var text1 = document.createTextNode(balance[i-1].currency);
+					var text2 = document.createTextNode(balance[i-1].balance);
+					var text3 = document.createTextNode(balance[i-1].updated_at);
+
+					td1.appendChild(text1);
+					td2.appendChild(text2);
+					td3.appendChild(text3);
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+
+					tb1.appendChild(tr);
+				}
+			}
+			balance_table.appendChild(tb1);
+		}
+
+		function generateTransaction(transactions) {
+			console.log(transactions);
+			const myNode = document.getElementById('table_transaction');
+			while(myNode.firstChild) {
+				myNode.removeChild(myNode.firstChild);
+			}
+			var table_transaction=document.getElementById('table_transaction');
+			var tb1=document.createElement('table');
+			for(var i=0;i<transactions.length+1;i++) {
+				var tr = document.createElement('tr');
+				
+				if(transactions.length==0) {
+						var td1 = document.createElement('td');
+						var text1 = document.createTextNode('No Transactions Found.');
+						td1.appendChild(text1);
+						tr.appendChild(td1);
+						tb1.appendChild(tr);
+						break;
+				}
+				else if(i<1) {
+					var td1 = document.createElement('td');
+					var td2 = document.createElement('td');
+					var td3 = document.createElement('td');
+					var td4 = document.createElement('td');
+					var td5 = document.createElement('td');
+					var td6 = document.createElement('td');
+					var td7 = document.createElement('td');
+
+					var text1 = document.createTextNode('Transaction ID');
+					var text2 = document.createTextNode('Type');
+					var text3 = document.createTextNode('Amount');
+					var text4 = document.createTextNode('Currency Type');
+					var text5 = document.createTextNode('Transaction Status');
+					var text6 = document.createTextNode('Initiated At');
+					var text7 = document.createTextNode('Confirmed At');
+
+					td1.appendChild(text1);
+					td2.appendChild(text2);
+					td3.appendChild(text3);
+					td4.appendChild(text4);
+					td5.appendChild(text5);
+					td6.appendChild(text6);
+					td7.appendChild(text7);
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+					tr.appendChild(td4);
+					tr.appendChild(td5);
+					tr.appendChild(td6);
+					tr.appendChild(td7);
+		
+					tb1.appendChild(tr);
+				}
+				else {
+
+					var td1 = document.createElement('td');
+					var td2 = document.createElement('td');
+					var td3 = document.createElement('td');
+					var td4 = document.createElement('td');
+					var td5 = document.createElement('td');
+					var td6 = document.createElement('td');
+					var td7 = document.createElement('td');
+
+					var text1 = document.createTextNode(transactions[i-1].id);
+					var text2 = document.createTextNode(transactions[i-1].type);
+					var text3 = document.createTextNode(transactions[i-1].amount);
+					var text4 = document.createTextNode(transactions[i-1].type);
+					var text5 = document.createTextNode(transactions[i-1].status);
+					var text6 = document.createTextNode(transactions[i-1].initiated_at);
+					var text7 = document.createTextNode(transactions[i-1].confirmed_at);
+
+					td1.appendChild(text1);
+					td2.appendChild(text2);
+					td3.appendChild(text3);
+					td4.appendChild(text4);
+					td5.appendChild(text5);
+					td6.appendChild(text6);
+					td7.appendChild(text7);
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+					tr.appendChild(td4);
+					tr.appendChild(td5);
+					tr.appendChild(td6);
+					tr.appendChild(td7);
+		
+					tb1.appendChild(tr);
+				}
+			}
+			table_transaction.appendChild(tb1);
+		}
+
+		function generateExchange(exchange) {
+			console.log(exchange);
+			const myNode = document.getElementById('exchange_table');
+			while(myNode.firstChild) {
+				myNode.removeChild(myNode.firstChild);
+			}
+			var exchange_table=document.getElementById('exchange_table');
+			var tb1=document.createElement('table');
+			for(var i=0;i<exchange.length+1;i++) {
+				var tr = document.createElement('tr');
+
+				if(i<1) {
+					var td1 = document.createElement('td');
+					var td2 = document.createElement('td');
+					var td3 = document.createElement('td');
+
+					var text1 = document.createTextNode("Currency");
+					var text2 = document.createTextNode("USD");
+					var text3 = document.createTextNode("Last Updated");
+					
+					td1.appendChild(text1);
+					td2.appendChild(text2);
+					td3.appendChild(text3);
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+					
+					tb1.appendChild(tr);
+				}
+				else {
+					var td1 = document.createElement('td');
+					var td2 = document.createElement('td');
+					var td3 = document.createElement('td');
+
+					var text1 = document.createTextNode(exchange[i-1].from);
+					var text2 = document.createTextNode(exchange[i-1].rate);
+					var text3 = document.createTextNode(exchange[i-1].timestamp);
+					
+					td1.appendChild(text1);
+					td2.appendChild(text2);
+					td3.appendChild(text3);
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+					
+					tb1.appendChild(tr);	
+				}
+			}
+			exchange_table.appendChild(tb1);
+		}
+
 		// Bind buttons for the other SDK example methods [Requires a successful Zabo.connect() first]
 		const bindOtherMethods = () => {
 			document.querySelector('#balance').addEventListener('click', ev => {
 				// Get ETH balance
-				document.getElementById('curren').innerHTML = "";
-				for(var i=0;i<account.currencies.length;i++) {
+				var tkrs = "";
+				for(var i=0;i<cur_currencies.length;i++) {
 					if(i>0)
-						document.getElementById('curren').innerHTML += ",";
-					var curr = account.currencies[i];
-					console.log('1');
-					document.getElementById('curren').innerHTML += '\"' + curr.currency + '\"';
+						tkrs+=',';
+					tkrs+=cur_currencies[i];
 				}
-				document.getElementById('curren').innerHTML += "]}";
-				Zabo.accounts.getBalances({tickers: curren}).then(balances => {
-					console.log(balances)
+				// var jsonStr = JSON.stringify(tkrs)
+				console.log(tkrs)
+				Zabo.accounts.getBalances({tickers: tkrs}).then(balances => {
+					
+					generateBalance(balances.data);
+					unhide('table_balance');
+					generateCanvas(balances.data);
+
 				}).catch(error => {
 					/* User has not yet connected or doesn't have an ether wallet */
 					console.error(error)
@@ -208,6 +474,8 @@
 				// Get account transactions history
 				Zabo.transactions.getTransactionHistory({ currencyTicker: document.getElementById("tic").value }).then(history => {
 					console.log(history)
+					generateTransaction(history.data)
+					unhide('transaction_table')
 				}).catch(error => {
 					/* User has not yet connected */
 					console.error(error)
@@ -217,6 +485,9 @@
 				// Get crypto USD exchange rates
 				Zabo.currencies.getExchangeRates().then(rates => {
 					console.log(rates)
+					generateExchange(rates.data)
+					document.getElementById('table_exchange').classList.remove('hidden')
+					unhide('table_exchange')
 				}).catch(error => {
 					console.error(error)
 				})
