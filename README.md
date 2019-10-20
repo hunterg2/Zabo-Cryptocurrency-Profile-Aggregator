@@ -22,6 +22,6 @@ Open a web browser and enter in the url -
 > localhost:3000
 
 ### Step 4:
-Crpton homepage will load up.
+Crypton homepage will load up.
 Click on connect and choose a crypto-wallet from the new window that just popped up and you will be able to use other functions afterwards.
 (Allow Popups to run incase no new window opens)
