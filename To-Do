@@ -1,0 +1,7 @@
+Fix balance bar graph to not display balanes of 0
+Fix balance display to not overflow when number of different balances get large
+
+Fix Display of Exchange Rate to look nicer, and to not overflow
+(Maybe add type of graph)
+
+Update the 'Curriences in Account' list by Get Transaction history to update when a new wallet in connected
