@@ -1,5 +1,5 @@
 # Zabo-Cryptocurrency-Profile-Aggregator
-EMT Hackathon UTD 2019 Project, displays a users aggregated cryptocurrency profile. 
+EMT Hackathon UTD 2019 Project, displays a users aggregated cryptocurrency profile between mutiple brokerages.
 
 Created by 'Zabo Boys'
           - Ansheng Li
